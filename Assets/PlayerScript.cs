@@ -6,16 +6,28 @@ public class PlayerScript : MonoBehaviour
 {
     public GameObject platform;
     private Rigidbody2D rb;
+    private BoxCollider2D bc;
+
     public float moveSpeed;
-    public float jumpForce;
+
+    public float startTime;
     public float timeLeft;
+
     public float startX;
     public float startY;
+
+    public float jumpForce;
+    public float gravityScale;
+    public float fallingGravityScale;
+
+    public LayerMask platformLayerMask;
 
     // Start is called before the first frame update
     void Start()
     {
+        timeLeft = startTime;
         rb = GetComponent<Rigidbody2D>();
+        bc = GetComponent<BoxCollider2D>();
     }
 
     // Update is called once per frame
@@ -25,20 +37,44 @@ public class PlayerScript : MonoBehaviour
         if (timeLeft < 0)
         {
             Death();
-            timeLeft = 10;
         }
 
         float dirX = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
 
-        if (Input.GetButtonDown("Jump")) {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
+        {
+            rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
         }
 
-        if (transform.position.y < -6)
+        if (rb.velocity.y >= 0)
+        {
+            rb.gravityScale = gravityScale;
+        }
+        else if (rb.velocity.y < 0)
+        {
+            rb.gravityScale = fallingGravityScale;
+        }
+
+        if (transform.position.y < -10)
         {
             Reset();
         }
+    }
+
+    bool IsGrounded()
+    {
+        RaycastHit2D raycastHit = Physics2D.BoxCast(bc.bounds.center, bc.bounds.size, 0f, Vector2.down, 0.01f, platformLayerMask);
+        Color rayColor;
+        if (raycastHit.collider != null)
+        {
+            rayColor = Color.green;
+        } else
+        {
+            rayColor = Color.red;
+        }
+        Debug.DrawRay(bc.bounds.center, Vector2.down * (bc.bounds.extents.y + 0.01f), rayColor);
+        return raycastHit.collider != null;
     }
 
     void Death()
@@ -50,7 +86,7 @@ public class PlayerScript : MonoBehaviour
     private void Reset()
     {
         transform.position = new Vector3(startX, startY, 0f);
-        timeLeft = 10;
+        timeLeft = startTime;
         rb.velocity = Vector3.zero;
     }
 }
