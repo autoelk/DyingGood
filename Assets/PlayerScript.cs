@@ -13,8 +13,8 @@ public class PlayerScript : MonoBehaviour
     public float startTime;
     public float timeLeft;
 
-    public float startX;
-    public float startY;
+    private float startX;
+    private float startY;
 
     public float jumpForce;
     public float gravityScale;
@@ -28,6 +28,9 @@ public class PlayerScript : MonoBehaviour
         timeLeft = startTime;
         rb = GetComponent<Rigidbody2D>();
         bc = GetComponent<BoxCollider2D>();
+
+        startX = transform.position.x;
+        startY = transform.position.y;
     }
 
     // Update is called once per frame
