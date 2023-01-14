@@ -56,7 +56,7 @@ public class PlayerScript : MonoBehaviour
             rb.gravityScale = fallingGravityScale;
         }
 
-        if (transform.position.y < -10)
+        if (transform.position.y < -15)
         {
             Reset();
         }
