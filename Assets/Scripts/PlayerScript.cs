@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerScript : MonoBehaviour
 {
+    public Animator animator;
     public GameObject platform;
     private Rigidbody2D rb;
     private BoxCollider2D bc;
@@ -67,7 +68,7 @@ public class PlayerScript : MonoBehaviour
 
     bool IsGrounded()
     {
-        RaycastHit2D raycastHit = Physics2D.BoxCast(bc.bounds.center, bc.bounds.size, 0f, Vector2.down, 0.01f, platformLayerMask);
+        RaycastHit2D raycastHit = Physics2D.BoxCast(bc.bounds.center, bc.bounds.size, 0f, Vector2.down, 0.1f, platformLayerMask);
         Color rayColor;
         if (raycastHit.collider != null)
         {
@@ -76,11 +77,11 @@ public class PlayerScript : MonoBehaviour
         {
             rayColor = Color.red;
         }
-        Debug.DrawRay(bc.bounds.center, Vector2.down * (bc.bounds.extents.y + 0.01f), rayColor);
+        Debug.DrawRay(bc.bounds.center, Vector2.down * (bc.bounds.extents.y + 0.1f), rayColor);
         return raycastHit.collider != null;
     }
 
-    void Death()
+    public void Death()
     {
         Instantiate(platform, new Vector3(transform.position.x, transform.position.y, 0f), transform.rotation);
         Reset();
@@ -88,6 +89,7 @@ public class PlayerScript : MonoBehaviour
 
     private void Reset()
     {
+        animator.Play("Player_death", 0, 0.0f);
         transform.position = new Vector3(startX, startY, 0f);
         timeLeft = startTime;
         rb.velocity = Vector3.zero;
