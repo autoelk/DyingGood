@@ -27,6 +27,9 @@ public class PlayerScript : MonoBehaviour
 
     public LayerMask platformLayerMask;
 
+    public GameObject[] platforms;
+    public GameObject finish;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -98,6 +101,22 @@ public class PlayerScript : MonoBehaviour
         animator.SetTrigger("Spike");
         rb.constraints = RigidbodyConstraints2D.FreezeAll;
         StartCoroutine(spikeDeathWait());
+    }
+
+    public void portalDeath()
+    {
+        // need animation?
+        Vector3 pos;
+        platforms = GameObject.FindGameObjectsWithTag("Platform");
+        for (int i = 0; i < platforms.Length; i++)
+        {
+            pos = platforms[i].transform.position;
+            platforms[i].transform.position = new Vector3(pos.y, -pos.x);
+        }
+        finish = GameObject.FindWithTag("Finish");
+        pos = finish.transform.position;
+        finish.transform.position = new Vector3(pos.y, -pos.x);
+        Reset();
     }
 
     IEnumerator spikeDeathWait()
