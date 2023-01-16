@@ -25,10 +25,9 @@ public class PlayerScript : MonoBehaviour
 
     public TimerScript timerScript;
 
-    public LayerMask platformLayerMask;
+    public int gravityCount;
 
-    public GameObject[] platforms;
-    public GameObject finish;
+    public LayerMask platformLayerMask;
 
     // Start is called before the first frame update
     void Start()
@@ -52,24 +51,54 @@ public class PlayerScript : MonoBehaviour
             decayDeath();
         }
 
-        float dirX = Input.GetAxisRaw("Horizontal");
-        rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
+        if (gravityCount == 0 || gravityCount == 2)
+        {
+            float dirX = Input.GetAxisRaw("Horizontal");
+            rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
 
-        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))&& IsGrounded())
+            if (rb.velocity.y >= 0)
+            {
+                rb.gravityScale = gravityScale;
+            }
+            else if (rb.velocity.y < 0)
+            {
+                rb.gravityScale = fallingGravityScale;
+            }
+        }
+        else
+        {
+            float dirY = Input.GetAxisRaw("Vertical");
+            rb.velocity = new Vector2(rb.velocity.x, dirY * moveSpeed);
+
+            if (rb.velocity.x >= 0)
+            {
+                rb.gravityScale = gravityScale;
+            }
+            else if (rb.velocity.x < 0)
+            {
+                rb.gravityScale = fallingGravityScale;
+            }
+        }
+
+        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))&& IsGrounded() && gravityCount == 0)
         {
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
         }
-
-        if (rb.velocity.y >= 0)
+        else if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A)) && IsGrounded() && gravityCount == 1)
         {
-            rb.gravityScale = gravityScale;
+            rb.AddForce(Vector2.left * jumpForce, ForceMode2D.Impulse);
         }
-        else if (rb.velocity.y < 0)
+        else if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)) && IsGrounded() && gravityCount == 2)
         {
-            rb.gravityScale = fallingGravityScale;
+            rb.AddForce(Vector2.down * jumpForce, ForceMode2D.Impulse);
+        }
+        else if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D)) && IsGrounded() && gravityCount == 3)
+        {
+            rb.AddForce(Vector2.right * jumpForce, ForceMode2D.Impulse);
         }
 
-        if (transform.position.y < -15)
+
+        if (transform.position.y < -15 || transform.position.y > 15 || transform.position.x > 26 || transform.position.x < -26)
         {
             Reset();
         }
@@ -106,16 +135,30 @@ public class PlayerScript : MonoBehaviour
     public void portalDeath()
     {
         // need animation?
-        Vector3 pos;
-        platforms = GameObject.FindGameObjectsWithTag("Platform");
-        for (int i = 0; i < platforms.Length; i++)
+        //down-- > right
+        if (gravityCount == 0)
         {
-            pos = platforms[i].transform.position;
-            platforms[i].transform.position = new Vector3(pos.y, -pos.x);
+            Physics2D.gravity = Vector2.right;
+            gravityCount++;
         }
-        finish = GameObject.FindWithTag("Finish");
-        pos = finish.transform.position;
-        finish.transform.position = new Vector3(pos.y, -pos.x);
+        // right --> up
+        else if (gravityCount == 1)
+        {
+            Physics2D.gravity = Vector2.up;
+            gravityCount++;
+        }
+        // up --> left
+        else if (gravityCount == 2)
+        {
+            Physics2D.gravity = Vector2.left;
+            gravityCount++;
+        }
+        // left --> down
+        else if (gravityCount == 3)
+        {
+            Physics2D.gravity = Vector2.down;
+            gravityCount = 0;
+        }
         Reset();
     }
 
