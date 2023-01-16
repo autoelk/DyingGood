@@ -25,7 +25,7 @@ public class PlayerScript : MonoBehaviour
 
     public TimerScript timerScript;
 
-    public int gravityCount;
+    public bool reverseGravity;
 
     public LayerMask platformLayerMask;
 
@@ -51,11 +51,11 @@ public class PlayerScript : MonoBehaviour
             decayDeath();
         }
 
-        if (gravityCount == 0 || gravityCount == 2)
-        {
-            float dirX = Input.GetAxisRaw("Horizontal");
-            rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
+        float dirX = Input.GetAxisRaw("Horizontal");
+        rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
 
+        if (!reverseGravity)
+        {
             if (rb.velocity.y >= 0)
             {
                 rb.gravityScale = gravityScale;
@@ -67,38 +67,28 @@ public class PlayerScript : MonoBehaviour
         }
         else
         {
-            float dirY = Input.GetAxisRaw("Vertical");
-            rb.velocity = new Vector2(rb.velocity.x, dirY * moveSpeed);
-
-            if (rb.velocity.x >= 0)
+            if (rb.velocity.y <= 0)
             {
                 rb.gravityScale = gravityScale;
             }
-            else if (rb.velocity.x < 0)
+            else if (rb.velocity.y > 0)
             {
                 rb.gravityScale = fallingGravityScale;
             }
         }
+      
 
-        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))&& IsGrounded() && gravityCount == 0)
+        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))&& IsGrounded() && !reverseGravity)
         {
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
         }
-        else if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A)) && IsGrounded() && gravityCount == 1)
-        {
-            rb.AddForce(Vector2.left * jumpForce, ForceMode2D.Impulse);
-        }
-        else if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)) && IsGrounded() && gravityCount == 2)
+        else if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)) && IsGrounded() && reverseGravity)
         {
             rb.AddForce(Vector2.down * jumpForce, ForceMode2D.Impulse);
         }
-        else if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D)) && IsGrounded() && gravityCount == 3)
-        {
-            rb.AddForce(Vector2.right * jumpForce, ForceMode2D.Impulse);
-        }
 
 
-        if (transform.position.y < -15 || transform.position.y > 15 || transform.position.x > 26 || transform.position.x < -26)
+        if (transform.position.y < -15 || transform.position.y > 15)
         {
             Reset();
         }
@@ -106,17 +96,36 @@ public class PlayerScript : MonoBehaviour
 
     bool IsGrounded()
     {
-        RaycastHit2D raycastHit = Physics2D.BoxCast(bc.bounds.center, bc.bounds.size, 0f, Vector2.down, 0.1f, platformLayerMask);
-        Color rayColor;
-        if (raycastHit.collider != null)
+        if (!reverseGravity)
         {
-            rayColor = Color.green;
-        } else
-        {
-            rayColor = Color.red;
+            RaycastHit2D raycastHit = Physics2D.BoxCast(bc.bounds.center, bc.bounds.size, 0f, Vector2.down, 0.1f, platformLayerMask);
+            Color rayColor;
+            if (raycastHit.collider != null)
+            {
+                rayColor = Color.green;
+            }
+            else
+            {
+                rayColor = Color.red;
+            }
+            Debug.DrawRay(bc.bounds.center, Vector2.down * (bc.bounds.extents.y + 0.1f), rayColor);
+            return raycastHit.collider != null;
         }
-        Debug.DrawRay(bc.bounds.center, Vector2.down * (bc.bounds.extents.y + 0.1f), rayColor);
-        return raycastHit.collider != null;
+        else
+        {
+            RaycastHit2D raycastHit = Physics2D.BoxCast(bc.bounds.center, bc.bounds.size, 0f, Vector2.up, 0.1f, platformLayerMask);
+            Color rayColor;
+            if (raycastHit.collider != null)
+            {
+                rayColor = Color.green;
+            }
+            else
+            {
+                rayColor = Color.red;
+            }
+            Debug.DrawRay(bc.bounds.center, Vector2.up * (bc.bounds.extents.y + 0.1f), rayColor);
+            return raycastHit.collider != null;
+        }
     }
 
     public void decayDeath()
@@ -135,29 +144,15 @@ public class PlayerScript : MonoBehaviour
     public void portalDeath()
     {
         // need animation?
-        //down-- > right
-        if (gravityCount == 0)
-        {
-            Physics2D.gravity = Vector2.right;
-            gravityCount++;
-        }
-        // right --> up
-        else if (gravityCount == 1)
+        if (!reverseGravity)
         {
             Physics2D.gravity = Vector2.up;
-            gravityCount++;
+            reverseGravity = true;
         }
-        // up --> left
-        else if (gravityCount == 2)
-        {
-            Physics2D.gravity = Vector2.left;
-            gravityCount++;
-        }
-        // left --> down
-        else if (gravityCount == 3)
+        else
         {
             Physics2D.gravity = Vector2.down;
-            gravityCount = 0;
+            reverseGravity = false;
         }
         Reset();
     }
