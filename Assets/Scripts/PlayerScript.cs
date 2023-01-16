@@ -23,6 +23,8 @@ public class PlayerScript : MonoBehaviour
     public float gravityScale;
     public float fallingGravityScale;
 
+    public TimerScript timerScript;
+
     public LayerMask platformLayerMask;
 
     // Start is called before the first frame update
@@ -34,6 +36,8 @@ public class PlayerScript : MonoBehaviour
 
         startX = transform.position.x;
         startY = transform.position.y;
+
+        timerScript = GameObject.FindWithTag("Canvas").GetComponent<TimerScript>();
     }
 
     // Update is called once per frame
@@ -110,5 +114,6 @@ public class PlayerScript : MonoBehaviour
         transform.position = new Vector3(startX, startY, 0f);
         timeLeft = startTime;
         rb.velocity = Vector3.zero;
+        timerScript.Reset();
     }
 }

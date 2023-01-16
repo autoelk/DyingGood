@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Timer : MonoBehaviour
+public class TimerScript : MonoBehaviour
 {
     [SerializeField] private Image countdownCircleTimer;
-    [SerializeField] private Text countdownText;
+    [SerializeField] private TextMeshProUGUI countdownText;
     [SerializeField] private float startTime;
     private float currentTime;
     private bool updateTime;
@@ -32,5 +33,12 @@ public class Timer : MonoBehaviour
             float normalizedValue = Mathf.Clamp(currentTime / startTime, 0.0f, 1.0f);
             countdownCircleTimer.fillAmount = normalizedValue;
         }
+    }
+    public void Reset()
+    {
+        currentTime = startTime;
+        countdownCircleTimer.fillAmount = 1.0f;
+        countdownText.text = (int)currentTime + "";
+        updateTime = true;
     }
 }
