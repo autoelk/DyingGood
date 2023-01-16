@@ -5,9 +5,11 @@ using UnityEngine;
 public class PlayerScript : MonoBehaviour
 {
     public Animator animator;
-    public GameObject platform;
     private Rigidbody2D rb;
     private BoxCollider2D bc;
+
+    public GameObject normalBody;
+    public GameObject bouncyBody;
 
     public float moveSpeed;
 
@@ -40,7 +42,7 @@ public class PlayerScript : MonoBehaviour
         timeLeft -= Time.deltaTime;
         if (timeLeft < 0)
         {
-            Death();
+            decayDeath();
         }
 
         float dirX = Input.GetAxisRaw("Horizontal");
@@ -81,15 +83,30 @@ public class PlayerScript : MonoBehaviour
         return raycastHit.collider != null;
     }
 
-    public void Death()
+    public void decayDeath()
     {
-        Instantiate(platform, new Vector3(transform.position.x, transform.position.y, 0f), transform.rotation);
+        Instantiate(normalBody, new Vector3(transform.position.x, transform.position.y, 0f), transform.rotation);
+        Reset();
+    }
+
+    public void spikeDeath()
+    {
+        animator.SetTrigger("Spike");
+        rb.constraints = RigidbodyConstraints2D.FreezeAll;
+        StartCoroutine(spikeDeathWait());
+    }
+
+    IEnumerator spikeDeathWait()
+    {
+        yield return new WaitForSeconds(0.5f);
+        Instantiate(bouncyBody, new Vector3(transform.position.x, transform.position.y, 0f), transform.rotation);
         Reset();
     }
 
     private void Reset()
     {
-        animator.Play("Player_death", 0, 0.0f);
+        animator.Play("Player_decay", 0, 0.0f);
+        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
         transform.position = new Vector3(startX, startY, 0f);
         timeLeft = startTime;
         rb.velocity = Vector3.zero;

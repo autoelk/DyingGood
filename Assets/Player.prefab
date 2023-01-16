@@ -154,7 +154,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 5679295862845409675}
-  platform: {fileID: 1534187752034223637, guid: c73d03a0ac979a945b25d51f617da12b, type: 3}
+  normalBody: {fileID: 1534187752034223637, guid: c73d03a0ac979a945b25d51f617da12b, type: 3}
+  bouncyBody: {fileID: 1534187752034223637, guid: 3f163a1349f35474db59f1f53c067b66, type: 3}
   moveSpeed: 7
   startTime: 5
   timeLeft: 0

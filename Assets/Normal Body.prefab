@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1534187752034223639}
   - component: {fileID: 1534187752034223636}
   m_Layer: 6
-  m_Name: Decay Body
+  m_Name: Normal Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
