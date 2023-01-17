@@ -29,6 +29,9 @@ public class PlayerScript : MonoBehaviour
 
     public bool reverseGravity;
 
+    private bool finished;
+    private Vector2 finishPos;
+
     public LayerMask platformLayerMask;
 
     // Start is called before the first frame update
@@ -45,57 +48,68 @@ public class PlayerScript : MonoBehaviour
         timerScript = GameObject.FindWithTag("Canvas").GetComponent<TimerScript>();
 
         SetGravity(false);
+        finished = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        timeLeft -= Time.deltaTime;
-        if (timeLeft < 0)
+        if (!finished)
         {
-            decayDeath();
-        }
-
-        float dirX = Input.GetAxisRaw("Horizontal");
-        rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
-
-        if (!reverseGravity)
-        {
-            if (rb.velocity.y >= 0)
+            timeLeft -= Time.deltaTime;
+            if (timeLeft < 0)
             {
-                rb.gravityScale = gravityScale;
+                DecayDeath();
             }
-            else if (rb.velocity.y < 0)
+
+            // Horizontal movement
+            float dirX = Input.GetAxisRaw("Horizontal");
+            rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
+
+            // Better feeling jumps
+            if (!reverseGravity)
             {
-                rb.gravityScale = fallingGravityScale;
+                if (rb.velocity.y >= 0)
+                {
+                    rb.gravityScale = gravityScale;
+                }
+                else if (rb.velocity.y < 0)
+                {
+                    rb.gravityScale = fallingGravityScale;
+                }
             }
-        }
+            else
+            {
+                if (rb.velocity.y < 0)
+                {
+                    rb.gravityScale = gravityScale;
+                }
+                else if (rb.velocity.y >= 0)
+                {
+                    rb.gravityScale = fallingGravityScale;
+                }
+            }
+
+            // Jump
+            if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)) && IsGrounded() && !reverseGravity)
+            {
+                rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+            }
+            else if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)) && IsGrounded() && reverseGravity)
+            {
+                rb.AddForce(Vector2.down * jumpForce, ForceMode2D.Impulse);
+            }
+
+            // Fall off side
+            if (transform.position.y < -15 || transform.position.y > 15)
+            {
+                Reset();
+            }
+        } 
         else
         {
-            if (rb.velocity.y <= 0)
-            {
-                rb.gravityScale = gravityScale;
-            }
-            else if (rb.velocity.y > 0)
-            {
-                rb.gravityScale = fallingGravityScale;
-            }
-        }
-      
-
-        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))&& IsGrounded() && !reverseGravity)
-        {
-            rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-        }
-        else if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)) && IsGrounded() && reverseGravity)
-        {
-            rb.AddForce(Vector2.down * jumpForce, ForceMode2D.Impulse);
-        }
-
-
-        if (transform.position.y < -15 || transform.position.y > 15)
-        {
-            Reset();
+            // Move player to center of finish platform
+            transform.position = Vector3.Lerp(transform.position, finishPos, 5 * Time.deltaTime);
         }
     }
 
@@ -114,27 +128,26 @@ public class PlayerScript : MonoBehaviour
         return raycastHit.collider != null;
     }
 
-    public void decayDeath()
+    public void DecayDeath()
     {
         Instantiate(normalBody, new Vector3(transform.position.x, transform.position.y, 0f), transform.rotation);
         Reset();
     }
 
-    public void spikeDeath()
+    public void SpikeDeath()
     {
         animator.SetTrigger("Spike");
         rb.constraints = RigidbodyConstraints2D.FreezeAll;
-        StartCoroutine(spikeDeathWait());
+        Invoke("SpikeDeathWait", 0.5f);
     }
 
-    IEnumerator spikeDeathWait()
+    private void SpikeDeathWait()
     {
-        yield return new WaitForSeconds(0.5f);
         Instantiate(bouncyBody, new Vector3(transform.position.x, transform.position.y, 0f), transform.rotation);
         Reset();
     }
 
-    public void portalDeath()
+    public void Portal()
     {
         SetGravity(!reverseGravity);
     }
@@ -154,6 +167,14 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
+    public void Finish(Vector2 pos)
+    {
+        animator.SetTrigger("Finished");
+        finished = true;
+        rb.velocity = Vector3.zero;
+        rb.gravityScale = 0f;
+        finishPos = pos;
+    }
 
     private void Reset()
     {

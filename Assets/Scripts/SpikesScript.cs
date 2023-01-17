@@ -15,7 +15,7 @@ public class SpikesScript : MonoBehaviour
     {
         if (collision.gameObject.tag == "Player")
         {
-            playerScript.spikeDeath();
+            playerScript.SpikeDeath();
         }
     }
 }

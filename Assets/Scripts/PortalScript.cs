@@ -31,7 +31,7 @@ public class PortalScript : MonoBehaviour
             {
                 sprite.color = normalColor;
             }
-            playerScript.portalDeath();
+            playerScript.Portal();
         }
     }
 }
