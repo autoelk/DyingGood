@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -42,6 +43,8 @@ public class PlayerScript : MonoBehaviour
         startY = transform.position.y;
 
         timerScript = GameObject.FindWithTag("Canvas").GetComponent<TimerScript>();
+
+        SetGravity(false);
     }
 
     // Update is called once per frame
@@ -133,18 +136,21 @@ public class PlayerScript : MonoBehaviour
 
     public void portalDeath()
     {
-        // need animation?
-        if (!reverseGravity)
-        {
-            Physics2D.gravity = Vector2.up * 9.81f;
-            reverseGravity = true;
-            sr.flipY = true;
-        }
-        else
+        SetGravity(!reverseGravity);
+    }
+
+    private void SetGravity(bool reverse)
+    {
+        if (!reverse)
         {
             Physics2D.gravity = Vector2.down * 9.81f;
-            reverseGravity = false;
             sr.flipY = false;
+            reverseGravity = false;
+        } else
+        {
+            Physics2D.gravity = Vector2.up * 9.81f;
+            sr.flipY = true;
+            reverseGravity = true;
         }
     }
 
