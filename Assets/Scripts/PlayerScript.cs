@@ -7,6 +7,7 @@ public class PlayerScript : MonoBehaviour
     public Animator animator;
     private Rigidbody2D rb;
     private BoxCollider2D bc;
+    private SpriteRenderer sr;
 
     public GameObject normalBody;
     public GameObject bouncyBody;
@@ -35,6 +36,7 @@ public class PlayerScript : MonoBehaviour
         timeLeft = startTime;
         rb = GetComponent<Rigidbody2D>();
         bc = GetComponent<BoxCollider2D>();
+        sr = GetComponent<SpriteRenderer>();
 
         startX = transform.position.x;
         startY = transform.position.y;
@@ -96,36 +98,17 @@ public class PlayerScript : MonoBehaviour
 
     bool IsGrounded()
     {
+        RaycastHit2D raycastHit;
         if (!reverseGravity)
         {
-            RaycastHit2D raycastHit = Physics2D.BoxCast(bc.bounds.center, bc.bounds.size, 0f, Vector2.down, 0.1f, platformLayerMask);
-            Color rayColor;
-            if (raycastHit.collider != null)
-            {
-                rayColor = Color.green;
-            }
-            else
-            {
-                rayColor = Color.red;
-            }
-            Debug.DrawRay(bc.bounds.center, Vector2.down * (bc.bounds.extents.y + 0.1f), rayColor);
-            return raycastHit.collider != null;
+            raycastHit = Physics2D.BoxCast(bc.bounds.center, bc.bounds.size, 0f, Vector2.down, 0.1f, platformLayerMask);
+            
         }
         else
         {
-            RaycastHit2D raycastHit = Physics2D.BoxCast(bc.bounds.center, bc.bounds.size, 0f, Vector2.up, 0.1f, platformLayerMask);
-            Color rayColor;
-            if (raycastHit.collider != null)
-            {
-                rayColor = Color.green;
-            }
-            else
-            {
-                rayColor = Color.red;
-            }
-            Debug.DrawRay(bc.bounds.center, Vector2.up * (bc.bounds.extents.y + 0.1f), rayColor);
-            return raycastHit.collider != null;
+            raycastHit = Physics2D.BoxCast(bc.bounds.center, bc.bounds.size, 0f, Vector2.up, 0.1f, platformLayerMask);
         }
+        return raycastHit.collider != null;
     }
 
     public void decayDeath()
@@ -141,28 +124,30 @@ public class PlayerScript : MonoBehaviour
         StartCoroutine(spikeDeathWait());
     }
 
-    public void portalDeath()
-    {
-        // need animation?
-        if (!reverseGravity)
-        {
-            Physics2D.gravity = Vector2.up;
-            reverseGravity = true;
-        }
-        else
-        {
-            Physics2D.gravity = Vector2.down;
-            reverseGravity = false;
-        }
-        Reset();
-    }
-
     IEnumerator spikeDeathWait()
     {
         yield return new WaitForSeconds(0.5f);
         Instantiate(bouncyBody, new Vector3(transform.position.x, transform.position.y, 0f), transform.rotation);
         Reset();
     }
+
+    public void portalDeath()
+    {
+        // need animation?
+        if (!reverseGravity)
+        {
+            Physics2D.gravity = Vector2.up * 9.81f;
+            reverseGravity = true;
+            sr.flipY = true;
+        }
+        else
+        {
+            Physics2D.gravity = Vector2.down * 9.81f;
+            reverseGravity = false;
+            sr.flipY = false;
+        }
+    }
+
 
     private void Reset()
     {
