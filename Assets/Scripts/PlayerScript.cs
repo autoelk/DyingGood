@@ -45,10 +45,10 @@ public class PlayerScript : MonoBehaviour
         startX = transform.position.x;
         startY = transform.position.y;
 
-        timerScript = GameObject.FindWithTag("Canvas").GetComponent<TimerScript>();
-
         SetGravity(false);
         finished = false;
+
+        timerScript = GameObject.FindWithTag("Canvas").GetComponent<TimerScript>();
     }
 
     // Update is called once per frame
