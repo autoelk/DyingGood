@@ -13,10 +13,7 @@ public class TimerScript : MonoBehaviour
     private bool updateTime;
     private void Start()
     {
-        currentTime = startTime;
-        countdownCircleTimer.fillAmount = 1.0f;
-        countdownText.text = (int)currentTime + "";
-        updateTime = true;
+        Reset();
     }
     private void Update()
     {
@@ -29,7 +26,7 @@ public class TimerScript : MonoBehaviour
                 updateTime = false;
                 currentTime = 0.0f;
             }
-            countdownText.text = (int)currentTime + "";
+            countdownText.text = Mathf.RoundToInt(currentTime).ToString();
             float normalizedValue = Mathf.Clamp(currentTime / startTime, 0.0f, 1.0f);
             countdownCircleTimer.fillAmount = normalizedValue;
         }
@@ -38,7 +35,7 @@ public class TimerScript : MonoBehaviour
     {
         currentTime = startTime;
         countdownCircleTimer.fillAmount = 1.0f;
-        countdownText.text = (int)currentTime + "";
+        countdownText.text = Mathf.RoundToInt(currentTime).ToString();
         updateTime = true;
     }
 }
